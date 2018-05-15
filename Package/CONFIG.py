@@ -54,8 +54,12 @@ def MAIN_ENV(args):
     ldflags += " -L" + ops.path_join(cc_sysroot, 'usr/lib')
     ldflags += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
 
+    libs = ""
+    libs += " -lpixman-1 -lpng -lz"
+
     ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
     ops.exportEnv(ops.setEnv("CFLAGS", cflags))
+    ops.exportEnv(ops.setEnv("LIBS", libs))
     #ops.exportEnv(ops.setEnv("LIBS", libs))
     #extra_conf.append('CFLAGS="-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libz') + '"')
 
@@ -86,14 +90,30 @@ def MAIN_CONFIGURE(args):
 
     extra_conf = []
     extra_conf.append("--without-x")
-    extra_conf.append("--enable-png=no")
+    extra_conf.append("--enable-png=yes")
+    extra_conf.append("--enable-xml=yes")
+    extra_conf.append("--enable-glesv2=yes")
+    #extra_conf.append("--enable-drm=yes")
+    extra_conf.append("--enable-egl=yes")
     extra_conf.append("--enable-ps=no") 
     extra_conf.append("--enable-pdf=no")
     extra_conf.append("--enable-svg=no")
     extra_conf.append("--enable-interpreter=no")
+    extra_conf.append("--disable-gtk-doc")
+    extra_conf.append("--disable-gtk-doc-html")
     extra_conf.append("--host=" + cc_host)
-    extra_conf.append('pixman_CFLAGS="-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libpixman') + '"')
-    extra_conf.append('pixman_LIBS="-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lpixman-1"')
+    extra_conf.append('pixman_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libpixman'))
+    extra_conf.append('pixman_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lpixman-1')
+    extra_conf.append('png_REQUIRES=libpng')
+    extra_conf.append('png_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libpng'))
+    extra_conf.append('png_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lpng')
+    extra_conf.append('glesv2_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa'))
+    extra_conf.append('glesv2_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lGLESv2')
+    #extra_conf.append('drm_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libdrm'))
+    #extra_conf.append('drm_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -ldrm')
+    #extra_conf.append('egl_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa -I' + ops.path_join(iopc.getSdkPath(),'usr/include/libudev')) + ' -DMESA_EGL_NO_X11_HEADERS')
+    extra_conf.append('egl_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa ') + ' -DMESA_EGL_NO_X11_HEADERS')
+    extra_conf.append('egl_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lEGL -lgbm -ldrm -lexpat -lwayland-client -lglapi -lffi -lwayland-server')
     print extra_conf
     iopc.configure(tarball_dir, extra_conf)
 
@@ -106,7 +126,7 @@ def MAIN_BUILD(args):
     ops.mkdir(install_tmp_dir)
     iopc.make(tarball_dir)
     iopc.make_install(tarball_dir)
-    return False
+    return True
 
 def MAIN_INSTALL(args):
     set_global(args)
