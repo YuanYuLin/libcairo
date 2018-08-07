@@ -55,11 +55,12 @@ def MAIN_ENV(args):
     ldflags += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
 
     libs = ""
-    libs += " -lpixman-1 -lpng -lz"
+    libs += " -lpixman-1 -lpng -lz -lpthread"
 
-    ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
-    ops.exportEnv(ops.setEnv("CFLAGS", cflags))
-    ops.exportEnv(ops.setEnv("LIBS", libs))
+    #ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
+    #ops.exportEnv(ops.setEnv("CFLAGS", cflags))
+    #ops.exportEnv(ops.setEnv("LIBS", libs))
+    
     #ops.exportEnv(ops.setEnv("LIBS", libs))
     #extra_conf.append('CFLAGS="-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libz') + '"')
 
@@ -93,28 +94,65 @@ def MAIN_CONFIGURE(args):
     extra_conf.append("--enable-png=yes")
     extra_conf.append("--enable-xml=yes")
     extra_conf.append("--enable-glesv2=yes")
-    #extra_conf.append("--enable-drm=yes")
+    extra_conf.append("--enable-drm=no") # TODO: need to fix
+    extra_conf.append("--enable-ft=yes")
+    extra_conf.append("--enable-fc=yes")
+    extra_conf.append("--enable-gallium=no")
     extra_conf.append("--enable-egl=yes")
     extra_conf.append("--enable-ps=no") 
     extra_conf.append("--enable-pdf=no")
     extra_conf.append("--enable-svg=no")
+    extra_conf.append("--enable-pthread=yes")
+    extra_conf.append("--enable-gobject=yes")
     extra_conf.append("--enable-interpreter=no")
-    extra_conf.append("--disable-gtk-doc")
-    extra_conf.append("--disable-gtk-doc-html")
+    extra_conf.append("--enable-gtk-doc=no")
     extra_conf.append("--host=" + cc_host)
-    extra_conf.append('pixman_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libpixman'))
-    extra_conf.append('pixman_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lpixman-1')
+
+    cflags = ""
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libpixman')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libpng')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libdrm')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libdrm/libdrm')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libudev')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/freetype')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/freetype/freetype2')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/fontconfig')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libz')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libxml2')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libglib')
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libglib/glib-2.0')
+
+    libs = ""
+    libs += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
+    libs += " -lpixman-1 -lpng -lGLESv2 -ldrm -lfreetype -lfontconfig -lEGL -lgbm -lexpat -lglapi -lffi -lz -lxml2 -lpthread -luuid"
+    libs += " -lglib-2.0 -lwayland-client -lwayland-server -lpcre"
+    extra_conf.append('pixman_CFLAGS=' + cflags)
+    extra_conf.append('pixman_LIBS=' + libs)
     extra_conf.append('png_REQUIRES=libpng')
-    extra_conf.append('png_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libpng'))
-    extra_conf.append('png_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lpng')
-    extra_conf.append('glesv2_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa'))
-    extra_conf.append('glesv2_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lGLESv2')
-    #extra_conf.append('drm_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/libdrm'))
-    #extra_conf.append('drm_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -ldrm')
+    extra_conf.append('png_CFLAGS=' + cflags)
+    extra_conf.append('png_LIBS=' + libs)
+    extra_conf.append('glesv2_CFLAGS=' + cflags)
+    extra_conf.append('glesv2_LIBS=' + libs)
+    extra_conf.append('drm_CFLAGS=' + cflags)
+    extra_conf.append('drm_LIBS=' + libs)
+    extra_conf.append('FREETYPE_CFLAGS=' + cflags)
+    extra_conf.append('FREETYPE_LIBS=' + libs)
+    extra_conf.append('FONTCONFIG_CFLAGS=' + cflags)
+    extra_conf.append('FONTCONFIG_LIBS=' + libs)
     #extra_conf.append('egl_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa -I' + ops.path_join(iopc.getSdkPath(),'usr/include/libudev')) + ' -DMESA_EGL_NO_X11_HEADERS')
-    extra_conf.append('egl_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa ') + ' -DMESA_EGL_NO_X11_HEADERS')
-    extra_conf.append('egl_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lEGL -lgbm -ldrm -lexpat -lwayland-client -lglapi -lffi -lwayland-server')
-    print extra_conf
+    extra_conf.append('egl_CFLAGS=' + cflags + ' -DMESA_EGL_NO_X11_HEADERS')
+    extra_conf.append('egl_LIBS=' + libs)
+    extra_conf.append('glib_CFLAGS=' + cflags)
+    extra_conf.append('glib_LIBS=' + libs)
+    #extra_conf.append('CAIRO_CFLAGS=' + cflags)
+    #extra_conf.append('CFLAGS=' + cflags)
+    #libs = ""
+    #libs += ' -L' + ops.path_join(iopc.getSdkPath(), 'lib') 
+    #libs += ' -lz -lxml2 -lpthread -ldrm -luuid' 
+    #extra_conf.append('CAIRO_LIBS=' + libs)
+    #extra_conf.append('LIBS=' + libs)
+    #extra_conf.append('egl_LIBS=-L' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lEGL -lgbm -ldrm -lexpat -lwayland-client -lglapi -lffi -lwayland-server')
     iopc.configure(tarball_dir, extra_conf)
 
     return True
