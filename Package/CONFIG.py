@@ -43,20 +43,6 @@ def MAIN_ENV(args):
     ops.exportEnv(ops.setEnv("CROSS", ops.getEnv("CROSS_COMPILE")))
     ops.exportEnv(ops.setEnv("DESTDIR", install_tmp_dir))
 
-    cc_sysroot = ops.getEnv("CC_SYSROOT")
-
-    cflags = ""
-    cflags += " -I" + ops.path_join(cc_sysroot, 'usr/include')
-    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libz') 
-
-    ldflags = ""
-    ldflags += " -L" + ops.path_join(cc_sysroot, 'lib')
-    ldflags += " -L" + ops.path_join(cc_sysroot, 'usr/lib')
-    ldflags += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
-
-    libs = ""
-    libs += " -lpixman-1 -lpng -lz -lpthread"
-
     #ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
     #ops.exportEnv(ops.setEnv("CFLAGS", cflags))
     #ops.exportEnv(ops.setEnv("LIBS", libs))
@@ -87,6 +73,10 @@ def MAIN_PATCH(args, patch_group_name):
 def MAIN_CONFIGURE(args):
     set_global(args)
 
+    cflags = iopc.get_includes()
+    libs = iopc.get_libs()
+    print cflags
+    print libs
     print "SDK include path:" + iopc.getSdkPath()
 
     extra_conf = []
@@ -99,15 +89,16 @@ def MAIN_CONFIGURE(args):
     extra_conf.append("--enable-fc=yes")
     extra_conf.append("--enable-gallium=no")
     extra_conf.append("--enable-egl=yes")
-    extra_conf.append("--enable-ps=no") 
-    extra_conf.append("--enable-pdf=no")
+    extra_conf.append("--disable-ps") 
+    extra_conf.append("--disable-pdf")
     extra_conf.append("--enable-svg=no")
     extra_conf.append("--enable-pthread=yes")
     extra_conf.append("--enable-gobject=yes")
     extra_conf.append("--enable-interpreter=no")
-    extra_conf.append("--enable-gtk-doc=no")
+    extra_conf.append("--disable-gtk-doc")
     extra_conf.append("--host=" + cc_host)
 
+    '''
     cflags = ""
     cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libpixman')
     cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/libpng')
@@ -127,6 +118,7 @@ def MAIN_CONFIGURE(args):
     libs += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
     libs += " -lpixman-1 -lpng -lGLESv2 -ldrm -lfreetype -lfontconfig -lEGL -lgbm -lexpat -lglapi -lffi -lz -lxml2 -lpthread -luuid"
     libs += " -lglib-2.0 -lwayland-client -lwayland-server -lpcre"
+    '''
     extra_conf.append('pixman_CFLAGS=' + cflags)
     extra_conf.append('pixman_LIBS=' + libs)
     extra_conf.append('png_REQUIRES=libpng')
@@ -141,10 +133,12 @@ def MAIN_CONFIGURE(args):
     extra_conf.append('FONTCONFIG_CFLAGS=' + cflags)
     extra_conf.append('FONTCONFIG_LIBS=' + libs)
     #extra_conf.append('egl_CFLAGS=-I' + ops.path_join(iopc.getSdkPath(), 'usr/include/mesa -I' + ops.path_join(iopc.getSdkPath(),'usr/include/libudev')) + ' -DMESA_EGL_NO_X11_HEADERS')
-    extra_conf.append('egl_CFLAGS=' + cflags + ' -DMESA_EGL_NO_X11_HEADERS')
+    extra_conf.append('egl_CFLAGS=' + cflags)
     extra_conf.append('egl_LIBS=' + libs)
     extra_conf.append('glib_CFLAGS=' + cflags)
     extra_conf.append('glib_LIBS=' + libs)
+    extra_conf.append('CFLAGS=' + cflags)
+    extra_conf.append('LIBS=' + libs)
     #extra_conf.append('CAIRO_CFLAGS=' + cflags)
     #extra_conf.append('CFLAGS=' + cflags)
     #libs = ""
@@ -187,6 +181,19 @@ def MAIN_INSTALL(args):
 
     iopc.installBin(args["pkg_name"], ops.path_join(ops.path_join(install_dir, "lib"), "."), "lib")
     iopc.installBin(args["pkg_name"], dst_include_dir, "include")
+
+    return False
+
+def MAIN_SDKENV(args):
+    set_global(args)
+
+    cflags = ""
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/' + args["pkg_name"])
+    iopc.add_includes(cflags)
+
+    libs = ""
+    libs += " -lcairo"
+    iopc.add_libs(libs)
 
     return False
 
